@@ -1,5 +1,8 @@
 const express = require('express')
 const app = express()
+const bodyParser = require('body-parser')
+
+app.use(bodyParser.json())
 
 let persons = [
   {
@@ -31,6 +34,10 @@ const generateInfo = () => {
   )
 }
 
+const getRandom = () => {
+  return Math.floor(Math.random() * Math.floor(100000))
+}
+
 app.get('/api/persons', (req, res) => {
   res.json(persons)
 })
@@ -38,6 +45,28 @@ app.get('/api/persons', (req, res) => {
 app.get('/api/info', (req, res) => {
   const info = generateInfo()
   res.send(info)
+})
+
+app.post('/api/persons', (req, res) => {
+  const body = req.body
+
+  if (body.name === undefined || body.number === undefined ||
+    body.name.trim() === '' || body.number.trim() === '') {
+    return res.status(400).json({ error: 'name or number missing' })
+  }
+
+  if (persons.find(person => person.name === body.name)) {
+    return res.status(400).json({ error: 'name already in phonebook' })
+  }
+
+  const person = {
+    name: body.name,
+    number: body.number,
+    id: getRandom()
+  }
+
+  persons = persons.concat(person)
+  res.json(person)
 })
 
 app.get('/api/persons/:id', (req, res) => {
@@ -49,6 +78,12 @@ app.get('/api/persons/:id', (req, res) => {
   } else {
     res.status(404).end()
   }
+})
+
+app.delete('/api/persons/:id', (req, res) => {
+  const id = Number(req.params.id)
+  persons = persons.filter(person => person.id !== id)
+  res.status(204).end()
 })
 
 const PORT = 3001
