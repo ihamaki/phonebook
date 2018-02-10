@@ -11,36 +11,6 @@ app.use(morgan(':method, :url, :data, :status, :res[content-length] - :response-
 app.use(cors())
 app.use(express.static('build'))
 
-let persons = [
-  {
-    name: "Arto Hellas",
-    number: "040-123456",
-    id: 1
-  },
-  {
-    name: "Martti Tienari",
-    number: "040-123456",
-    id: 2
-  },
-  {
-    name: "Arto Järvinen",
-    number: "040-123456",
-    id: 3
-  },
-  {
-    name: "Lea Kutvonen",
-    number: "040-123456",
-    id: 4
-  }
-]
-
-const generateInfo = () => {
-  return (
-    `<p>puhelinluettelossa on ${persons.length} henkilön tiedot</p>
-     <p>${Date()}</p>`
-  )
-}
-
 const getRandom = () => {
   return Math.floor(Math.random() * Math.floor(100000))
 }
@@ -63,8 +33,15 @@ app.get('/api/persons', (req, res) => {
 })
 
 app.get('/api/info', (req, res) => {
-  const info = generateInfo()
-  res.send(info)
+  Person
+    .find({})
+    .then(persons => {
+      res.send(
+        `<p>puhelinluettelossa on ${persons.length} henkilön tiedot</p>
+         <p>${Date()}</p>`
+      )
+    })
+    .catch(error => console.log(error))
 })
 
 app.post('/api/persons', (req, res) => {
