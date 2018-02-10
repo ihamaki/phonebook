@@ -3,11 +3,10 @@ const app = express()
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
 
 app.use(bodyParser.json())
-morgan.token('data', (req, res) => {
-  return JSON.stringify(req.body)
-})
+morgan.token('data', (req, res) => JSON.stringify(req.body))
 app.use(morgan(':method, :url, :data, :status, :res[content-length] - :response-time ms'))
 app.use(cors())
 app.use(express.static('build'))
@@ -46,8 +45,20 @@ const getRandom = () => {
   return Math.floor(Math.random() * Math.floor(100000))
 }
 
+const formatPerson = (person) => {
+  return {
+    name: person.name,
+    number: person.number,
+    id: person._id
+  }
+}
+
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
+  Person
+    .find({})
+    .then(persons => {
+      res.json(persons.map(formatPerson))
+    })
 })
 
 app.get('/api/info', (req, res) => {
@@ -63,18 +74,21 @@ app.post('/api/persons', (req, res) => {
     return res.status(400).json({ error: 'name or number missing' })
   }
 
-  if (persons.find(person => person.name === body.name)) {
-    return res.status(400).json({ error: 'name already in phonebook' })
-  }
+  // if (persons.find(person => person.name === body.name)) {
+  //   return res.status(400).json({ error: 'name already in phonebook' })
+  // }
 
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
     id: getRandom()
-  }
+  })
 
-  persons = persons.concat(person)
-  res.json(person)
+  person
+    .save()
+    .then(savedPerson => {
+      res.json(formatPerson(savedPerson))
+    })
 })
 
 app.get('/api/persons/:id', (req, res) => {
