@@ -15,19 +15,11 @@ const getRandom = () => {
   return Math.floor(Math.random() * Math.floor(100000))
 }
 
-const formatPerson = (person) => {
-  return {
-    name: person.name,
-    number: person.number,
-    id: person._id
-  }
-}
-
 app.get('/api/persons', (req, res) => {
   Person
     .find({})
     .then(persons => {
-      res.json(persons.map(formatPerson))
+      res.json(persons.map(Person.format))
     })
     .catch(error => console.log(error))
 })
@@ -65,7 +57,7 @@ app.post('/api/persons', (req, res) => {
   person
     .save()
     .then(savedPerson => {
-      res.json(formatPerson(savedPerson))
+      res.json(Person.format(savedPerson))
     })
     .catch(error => console.log(error))
 })
@@ -75,7 +67,7 @@ app.get('/api/persons/:id', (req, res) => {
     .findById(req.params.id)
     .then(person => {
       if (person) {
-        res.json(formatPerson(person))
+        res.json(Person.format(person))
       } else {
         res.status(404).end()
       }
