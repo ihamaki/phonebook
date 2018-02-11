@@ -44,10 +44,6 @@ app.post('/api/persons', (req, res) => {
     return res.status(400).json({ error: 'name or number missing' })
   }
 
-  // if (persons.find(person => person.name === body.name)) {
-  //   return res.status(400).json({ error: 'name already in phonebook' })
-  // }
-
   const person = new Person({
     name: body.name,
     number: body.number,
@@ -83,6 +79,24 @@ app.delete('/api/persons/:id', (req, res) => {
     .findByIdAndRemove(req.params.id)
     .then(result => {
       res.status(204).end()
+    })
+    .catch(error => {
+      res.status(400).send({ error: 'malformatted id' })
+    })
+})
+
+app.put('/api/persons/:id', (req, res) => {
+  const body = req.body
+
+  const person = {
+    name: body.name,
+    number: body.number
+  }
+
+  Person
+    .findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(updatedPerson => {
+      res.json(Person.format(updatedPerson))
     })
     .catch(error => {
       res.status(400).send({ error: 'malformatted id' })
