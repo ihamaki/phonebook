@@ -44,18 +44,24 @@ app.post('/api/persons', (req, res) => {
     return res.status(400).json({ error: 'name or number missing' })
   }
 
-  const person = new Person({
-    name: body.name,
-    number: body.number,
-    id: getRandom()
-  })
-
-  person
-    .save()
-    .then(savedPerson => {
-      res.json(Person.format(savedPerson))
+  Person.find({ name: body.name })
+    .then(result => {
+      if (result.length > 0) {
+        res.status(400).send({ error: 'name already in phonebook' })
+      } else {
+        const person = new Person({
+          name: body.name,
+          number: body.number,
+          id: getRandom()
+        })
+        person
+          .save()
+          .then(savedPerson => {
+            res.json(Person.format(savedPerson))
+          })
+          .catch(error => console.log(error))
+      }
     })
-    .catch(error => console.log(error))
 })
 
 app.get('/api/persons/:id', (req, res) => {
